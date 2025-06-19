@@ -7,8 +7,7 @@ repository: https://github.com/RuslanTsitser/widget_to_image_converter
 issue_tracker: https://github.com/RuslanTsitser/widget_to_image_converter/issues
 
 environment:
-  sdk: ^3.8.1
-  flutter: ">=3.3.0"
+  sdk: ^3.0.0
 
 dependencies:
   flutter:
