@@ -1,6 +1,6 @@
 name: widget_to_image_converter
 description: "A Flutter FFI plugin to convert a widget to an image. Uses C library to convert the widget to an image."
-version: 0.0.1
+version: 0.0.1+1
 license: MIT
 homepage: https://github.com/RuslanTsitser/widget_to_image_converter
 repository: https://github.com/RuslanTsitser/widget_to_image_converter
