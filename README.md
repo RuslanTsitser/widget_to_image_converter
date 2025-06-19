@@ -1,31 +1,31 @@
 # Widget to Image Converter
 
-Flutter FFI плагин для конвертации виджетов в изображения JPEG и PNG с использованием нативного C кода.
+Flutter FFI plugin for converting widgets to JPEG and PNG images using native C code.
 
-## 🚀 Возможности
+## 🚀 Features
 
-- Конвертация Flutter виджетов в изображения JPEG и PNG
-- Автоматическое управление состоянием конвертации
-- Настройка качества JPEG (1-100)
-- Поддержка различных pixel ratio
-- Автономная работа без внешних зависимостей
-- Кроссплатформенная поддержка (iOS, Android, macOS, Linux, Windows)
-- Использование однофайловой библиотеки stb_image_write.h для JPEG
-- Встроенная поддержка PNG через Flutter
+- Convert Flutter widgets to JPEG and PNG images
+- Automatic conversion state management
+- JPEG quality configuration (1-100)
+- Support for various pixel ratios
+- Standalone operation without external dependencies
+- Cross-platform support (iOS, Android, macOS, Linux, Windows)
+- Uses single-file library stb_image_write.h for JPEG
+- Built-in PNG support through Flutter
 
-## 📦 Установка
+## 📦 Installation
 
-Добавьте в `pubspec.yaml` вашего проекта:
+Add to your project's `pubspec.yaml`:
 
 ```yaml
 dependencies:
   widget_to_image_converter: ^0.0.1
-  path_provider: ^2.0.0  # для получения путей к директориям
+  path_provider: ^2.0.0  # for getting directory paths
 ```
 
-## 🔧 Использование
+## 🔧 Usage
 
-### Простое использование с Provider
+### Simple usage with Provider
 
 ```dart
 import 'package:flutter/material.dart';
@@ -55,7 +55,7 @@ class ExampleScreen extends StatelessWidget {
     return Scaffold(
       body: Column(
         children: [
-          // Оборачиваем виджет, который хотим конвертировать
+          // Wrap the widget we want to convert
           WidgetToImageWrapper(
             child: Container(
               width: 300,
@@ -70,7 +70,7 @@ class ExampleScreen extends StatelessWidget {
               ),
               child: const Center(
                 child: Text(
-                  'Конвертируемый виджет',
+                  'Widget to convert',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -81,7 +81,7 @@ class ExampleScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          // Кнопки для конвертации
+          // Conversion buttons
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -92,7 +92,7 @@ class ExampleScreen extends StatelessWidget {
                   final outputPath = '${tempDir.path}/widget_${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await controller.saveAsJpeg(outputPath: outputPath, quality: 90);
                 },
-                child: const Text('Сохранить как JPEG'),
+                child: const Text('Save as JPEG'),
               ),
               const SizedBox(width: 10),
               ElevatedButton(
@@ -102,11 +102,11 @@ class ExampleScreen extends StatelessWidget {
                   final outputPath = '${tempDir.path}/widget_${DateTime.now().millisecondsSinceEpoch}.png';
                   await controller.saveAsPng(outputPath: outputPath);
                 },
-                child: const Text('Сохранить как PNG'),
+                child: const Text('Save as PNG'),
               ),
             ],
           ),
-          // Отображение результата
+          // Result display
           const ResultDisplay(),
         ],
       ),
@@ -134,7 +134,7 @@ class ResultDisplay extends StatelessWidget {
               Image.file(File(controller.pngPath!), height: 200),
           ],
           if (controller.status == WidgetToImageStatus.error)
-            const Text('Ошибка конвертации', style: TextStyle(color: Colors.red)),
+            const Text('Conversion error', style: TextStyle(color: Colors.red)),
         ],
       ),
     );
@@ -142,7 +142,7 @@ class ResultDisplay extends StatelessWidget {
 }
 ```
 
-### Расширенное использование с контроллером
+### Advanced usage with controller
 
 ```dart
 class AdvancedExample extends StatefulWidget {
@@ -171,8 +171,8 @@ class _AdvancedExampleState extends State<AdvancedExample> {
   
     await _controller.saveAsJpeg(
       outputPath: outputPath,
-      quality: 95, // Высокое качество
-      pixelRatio: 2.0, // Высокое разрешение
+      quality: 95, // High quality
+      pixelRatio: 2.0, // High resolution
     );
   }
 
@@ -188,7 +188,7 @@ class _AdvancedExampleState extends State<AdvancedExample> {
             ),
             ElevatedButton(
               onPressed: _saveWithCustomSettings,
-              child: const Text('Сохранить с настройками'),
+              child: const Text('Save with settings'),
             ),
           ],
         ),
@@ -198,31 +198,31 @@ class _AdvancedExampleState extends State<AdvancedExample> {
 }
 ```
 
-### Прямое использование FFI функции
+### Direct FFI function usage
 
-Для прямого использования нативной функции конвертации:
+For direct usage of the native conversion function:
 
 ```dart
 import 'package:widget_to_image_converter/widget_to_image_converter.dart';
 import 'dart:typed_data';
 
-// Конвертация RGBA данных в JPEG
+// Convert RGBA data to JPEG
 String? convertRgbaToJpeg(
-  Uint8List rgbaData,  // RGBA данные изображения (4 байта на пиксель)
-  int width,           // Ширина изображения в пикселях
-  int height,          // Высота изображения в пикселях
-  int quality,         // Качество JPEG (1-100)
-  String outputPath,   // Путь для сохранения JPEG файла
+  Uint8List rgbaData,  // RGBA image data (4 bytes per pixel)
+  int width,           // Image width in pixels
+  int height,          // Image height in pixels
+  int quality,         // JPEG quality (1-100)
+  String outputPath,   // Path to save JPEG file
 );
 ```
 
-## 📋 API Справочник
+## 📋 API Reference
 
 ### WidgetToImageProvider
 
-Для передачи контроллера в виджеты через `InheritedWidget`.
+For passing controller to widgets through `InheritedWidget`.
 
-**Конструктор:**
+**Constructor:**
 
 ```dart
 WidgetToImageProvider({
@@ -232,32 +232,32 @@ WidgetToImageProvider({
 })
 ```
 
-**Статические методы:**
+**Static methods:**
 
-- `WidgetToImageController of(BuildContext context, {bool listen = true})` - Получить контроллер
+- `WidgetToImageController of(BuildContext context, {bool listen = true})` - Get controller
 
 ### WidgetToImageController
 
-Контроллер для управления процессом конвертации.
+Controller for managing the conversion process.
 
-**Свойства:**
+**Properties:**
 
-- `GlobalKey repaintKey` - Ключ для RepaintBoundary
-- `WidgetToImageStatus status` - Текущий статус конвертации
-- `String? jpegPath` - Путь к сохраненному JPEG файлу
-- `String? pngPath` - Путь к сохраненному PNG файлу
+- `GlobalKey repaintKey` - Key for RepaintBoundary
+- `WidgetToImageStatus status` - Current conversion status
+- `String? jpegPath` - Path to saved JPEG file
+- `String? pngPath` - Path to saved PNG file
 
-**Методы:**
+**Methods:**
 
-- `Future<void> saveAsJpeg({required String outputPath, double? pixelRatio, int quality = 90})` - Сохранить как JPEG
-- `Future<void> saveAsPng({required String outputPath, double? pixelRatio})` - Сохранить как PNG
-- `void dispose()` - Освободить ресурсы
+- `Future<void> saveAsJpeg({required String outputPath, double? pixelRatio, int quality = 90})` - Save as JPEG
+- `Future<void> saveAsPng({required String outputPath, double? pixelRatio})` - Save as PNG
+- `void dispose()` - Release resources
 
 ### WidgetToImageWrapper
 
-Виджет-обертка для автоматического создания RepaintBoundary.
+Wrapper widget for automatic RepaintBoundary creation.
 
-**Конструктор:**
+**Constructor:**
 
 ```dart
 WidgetToImageWrapper({Key? key, required Widget child})
@@ -265,66 +265,66 @@ WidgetToImageWrapper({Key? key, required Widget child})
 
 ### WidgetToImageStatus
 
-Перечисление статусов конвертации:
+Conversion status enumeration:
 
-- `idle` - Ожидание
-- `saving` - Сохранение
-- `saved` - Сохранено
-- `error` - Ошибка
+- `idle` - Waiting
+- `saving` - Saving
+- `saved` - Saved
+- `error` - Error
 
 ### convertRgbaToJpeg
 
-Нативная функция для конвертации RGBA данных в JPEG.
+Native function for converting RGBA data to JPEG.
 
-**Параметры:**
+**Parameters:**
 
-- `rgbaData` (Uint8List): RGBA данные изображения (4 байта на пиксель: R, G, B, A)
-- `width` (int): Ширина изображения в пикселях
-- `height` (int): Высота изображения в пикселях
-- `quality` (int): Качество JPEG (1-100)
-- `outputPath` (String): Путь для сохранения JPEG файла
+- `rgbaData` (Uint8List): RGBA image data (4 bytes per pixel: R, G, B, A)
+- `width` (int): Image width in pixels
+- `height` (int): Image height in pixels
+- `quality` (int): JPEG quality (1-100)
+- `outputPath` (String): Path to save JPEG file
 
-**Возвращает:**
+**Returns:**
 
-- `String`: Путь к сохраненному JPEG файлу
+- `String`: Path to saved JPEG file
 
-**Исключения:**
+**Exceptions:**
 
-- `ArgumentError`: Если параметры неверны
-- `Exception`: Если конвертация не удалась
+- `ArgumentError`: If parameters are invalid
+- `Exception`: If conversion fails
 
-## ⚙️ Требования
+## ⚙️ Requirements
 
-- Dart 3.0.0 или выше
+- Dart 3.0.0 or higher
 
-## 🖥️ Поддержка платформ
+## 🖥️ Platform Support
 
 - ✅ iOS
 - ✅ Android
 - ✅ macOS
-- Linux - пока не протестировано
-- Windows - пока не протестировано
+- Linux - not tested yet
+- Windows - not tested yet
 
-## 🔍 Детали реализации
+## 🔍 Implementation Details
 
-### Процесс конвертации
+### Conversion Process
 
-1. **Получение изображения**: Используется `RepaintBoundary` для захвата виджета
-2. **Извлечение данных**: RGBA данные извлекаются из `ui.Image`
-3. **Конвертация JPEG**: Используется нативная C функция с stb_image_write.h
-4. **Сохранение PNG**: Используется встроенный метод Flutter
-5. **Обновление состояния**: Контроллер уведомляет о изменениях через `ChangeNotifier`
+1. **Image capture**: Uses `RepaintBoundary` to capture the widget
+2. **Data extraction**: RGBA data is extracted from `ui.Image`
+3. **JPEG conversion**: Uses native C function with stb_image_write.h
+4. **PNG saving**: Uses built-in Flutter method
+5. **State update**: Controller notifies about changes through `ChangeNotifier`
 
-### Технические детали
+### Technical Details
 
-- **FFI привязки**: Автоматически генерируются с помощью ffigen
-- **Память**: Правильное выделение и освобождение памяти через FFI
-- **Ошибки**: Валидация параметров и обработка ошибок на C и Dart сторонах
-- **Состояние**: Реактивное обновление UI через ChangeNotifier
+- **FFI bindings**: Automatically generated using ffigen
+- **Memory**: Proper memory allocation and deallocation through FFI
+- **Errors**: Parameter validation and error handling on C and Dart sides
+- **State**: Reactive UI updates through ChangeNotifier
 
-## 📝 Примеры использования
+## 📝 Usage Examples
 
-### Мониторинг статуса конвертации
+### Monitoring conversion status
 
 ```dart
 class StatusMonitor extends StatelessWidget {
@@ -334,29 +334,29 @@ class StatusMonitor extends StatelessWidget {
   
     switch (controller.status) {
       case WidgetToImageStatus.idle:
-        return const Text('Готов к конвертации');
+        return const Text('Ready for conversion');
       case WidgetToImageStatus.saving:
         return const CircularProgressIndicator();
       case WidgetToImageStatus.saved:
-        return const Text('Конвертация завершена');
+        return const Text('Conversion completed');
       case WidgetToImageStatus.error:
-        return const Text('Ошибка конвертации', style: TextStyle(color: Colors.red));
+        return const Text('Conversion error', style: TextStyle(color: Colors.red));
     }
   }
 }
 ```
 
-### Кастомные настройки качества
+### Custom quality settings
 
 ```dart
-// Высокое качество для печати
+// High quality for printing
 await controller.saveAsJpeg(
   outputPath: path,
   quality: 95,
   pixelRatio: 2.0,
 );
 
-// Низкое качество для веба
+// Low quality for web
 await controller.saveAsJpeg(
   outputPath: path,
   quality: 70,
@@ -364,17 +364,17 @@ await controller.saveAsJpeg(
 );
 ```
 
-### Обработка ошибок
+### Error handling
 
 ```dart
 try {
   await controller.saveAsJpeg(outputPath: path);
-  print('Успешно сохранено: ${controller.jpegPath}');
+  print('Successfully saved: ${controller.jpegPath}');
 } catch (e) {
-  print('Ошибка конвертации: $e');
+  print('Conversion error: $e');
 }
 ```
 
-## 📄 Лицензия
+## 📄 License
 
-Этот проект лицензирован под MIT License - см. файл LICENSE для деталей.
+This project is licensed under the MIT License - see the LICENSE file for details.
