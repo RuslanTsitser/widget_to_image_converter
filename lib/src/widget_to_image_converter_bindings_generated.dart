@@ -15,11 +15,11 @@ import 'dart:ffi' as ffi;
 class WidgetToImageConverterBindings {
   /// Holds the symbol lookup function.
   final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-  _lookup;
+      _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
   WidgetToImageConverterBindings(ffi.DynamicLibrary dynamicLibrary)
-    : _lookup = dynamicLibrary.lookup;
+      : _lookup = dynamicLibrary.lookup;
 
   /// The symbols are looked up with [lookup].
   WidgetToImageConverterBindings.fromLookup(
@@ -50,10 +50,10 @@ class WidgetToImageConverterBindings {
 
   late final _sum_long_runningPtr =
       _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Int)>>(
-        'sum_long_running',
-      );
-  late final _sum_long_running = _sum_long_runningPtr
-      .asFunction<int Function(int, int)>();
+    'sum_long_running',
+  );
+  late final _sum_long_running =
+      _sum_long_runningPtr.asFunction<int Function(int, int)>();
 
   /// Convert RGBA image data to JPEG and save to file
   ffi.Pointer<ffi.Char> convert_rgba_to_jpeg(
@@ -72,26 +72,21 @@ class WidgetToImageConverterBindings {
     );
   }
 
-  late final _convert_rgba_to_jpegPtr =
-      _lookup<
-        ffi.NativeFunction<
+  late final _convert_rgba_to_jpegPtr = _lookup<
+      ffi.NativeFunction<
           ffi.Pointer<ffi.Char> Function(
             ffi.Pointer<ffi.Uint8>,
             ffi.Int,
             ffi.Int,
             ffi.Int,
             ffi.Pointer<ffi.Char>,
-          )
-        >
-      >('convert_rgba_to_jpeg');
-  late final _convert_rgba_to_jpeg = _convert_rgba_to_jpegPtr
-      .asFunction<
-        ffi.Pointer<ffi.Char> Function(
-          ffi.Pointer<ffi.Uint8>,
-          int,
-          int,
-          int,
-          ffi.Pointer<ffi.Char>,
-        )
-      >();
+          )>>('convert_rgba_to_jpeg');
+  late final _convert_rgba_to_jpeg = _convert_rgba_to_jpegPtr.asFunction<
+      ffi.Pointer<ffi.Char> Function(
+        ffi.Pointer<ffi.Uint8>,
+        int,
+        int,
+        int,
+        ffi.Pointer<ffi.Char>,
+      )>();
 }

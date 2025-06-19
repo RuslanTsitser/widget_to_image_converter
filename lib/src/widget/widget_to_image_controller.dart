@@ -46,8 +46,7 @@ class WidgetToImageController with ChangeNotifier {
 
     try {
       /// Get the pixel ratio from the context
-      pixelRatio ??=
-          _repaintKey.currentContext
+      pixelRatio ??= _repaintKey.currentContext
               ?.getInheritedWidgetOfExactType<MediaQuery>()
               ?.data
               .devicePixelRatio ??
@@ -101,8 +100,7 @@ class WidgetToImageController with ChangeNotifier {
 
     try {
       /// Get the pixel ratio from the context
-      pixelRatio ??=
-          _repaintKey.currentContext
+      pixelRatio ??= _repaintKey.currentContext
               ?.getInheritedWidgetOfExactType<MediaQuery>()
               ?.data
               .devicePixelRatio ??
