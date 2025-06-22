@@ -106,3 +106,64 @@ String convertRgbaToJpeg(
 
   return actualPath;
 }
+
+/// Convert RGBA file to JPEG and save to file
+///
+/// Parameters:
+///   inputPath: Path to the input RGBA file
+///   width: Image width in pixels
+///   height: Image height in pixels
+///   quality: JPEG quality (1-100)
+///   outputPath: Path where to save the JPEG file
+///
+String convertRgbaFileToJpeg(
+  String inputPath,
+  int width,
+  int height,
+  int quality,
+  String outputPath,
+) {
+  // Validate parameters
+  if (inputPath.isEmpty) {
+    throw ArgumentError('Input path cannot be empty');
+  }
+  if (width <= 0 || height <= 0) {
+    throw ArgumentError('Width and height must be positive');
+  }
+  if (quality < 1 || quality > 100) {
+    throw ArgumentError('Quality must be between 1 and 100');
+  }
+  if (outputPath.isEmpty) {
+    throw ArgumentError('Output path cannot be empty');
+  }
+
+  // Convert paths to C strings
+  final Pointer<Char> inputPathPtr = inputPath.toNativeUtf8().cast<Char>();
+  final Pointer<Char> outputPathPtr = outputPath.toNativeUtf8().cast<Char>();
+
+  // Call C function
+  final Pointer<Char> resultPtr = _bindings.convert_rgba_file_to_jpeg(
+    inputPathPtr,
+    width,
+    height,
+    quality,
+    outputPathPtr,
+  );
+
+  // Free allocated memory
+  calloc.free(inputPathPtr);
+  calloc.free(outputPathPtr);
+
+  // Check if conversion was successful
+  if (resultPtr == nullptr) {
+    throw Exception('Failed to convert RGBA file to JPEG');
+  }
+
+  // Get the actual path where the file was saved
+  final String actualPath = resultPtr.cast<Utf8>().toDartString();
+
+  // Free the result pointer (allocated in C)
+  calloc.free(resultPtr);
+
+  return actualPath;
+}

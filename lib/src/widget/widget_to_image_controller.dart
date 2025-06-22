@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -6,45 +7,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:widget_to_image_converter/src/widget_to_image_converter.dart';
 
-/// Status of the widget to image conversion
-enum WidgetToImageStatus { idle, saving, saved, error }
-
 /// Controller for the widget to image conversion
-class WidgetToImageController with ChangeNotifier {
+class WidgetToImageController {
   final GlobalKey _repaintKey = GlobalKey();
 
   /// Key for the widget to image conversion
   GlobalKey get repaintKey => _repaintKey;
 
-  WidgetToImageStatus _status = WidgetToImageStatus.idle;
-
-  /// Status of the widget to image conversion
-  WidgetToImageStatus get status => _status;
-
-  String? _jpegPath;
-
-  /// Path to the saved JPEG file. Uses FFI to convert RGBA to JPEG
-  String? get jpegPath => _jpegPath;
-
-  String? _pngPath;
-
-  /// Path to the saved PNG file. Uses default dart method to save as PNG
-  String? get pngPath => _pngPath;
-
   /// Save the widget as a JPEG file
   /// - [outputPath] - Path to the saved JPEG file
   /// - [pixelRatio] - Pixel ratio of the image, default is 1.0
   /// - [quality] - Quality of the image, 0-100
-  Future<void> saveAsJpeg({
+  /// - [measureTime] - Whether to count the speed of the conversion
+  Future<String> saveAsJpeg({
     required String outputPath,
     double? pixelRatio,
     int quality = 90,
+    bool measureTime = false,
   }) async {
-    _status = WidgetToImageStatus.saving;
-
-    notifyListeners();
+    Stopwatch? stopwatch;
 
     try {
+      if (measureTime) {
+        stopwatch = Stopwatch()..start();
+      }
+
       /// Get the pixel ratio from the context
       pixelRatio ??= _repaintKey.currentContext
               ?.getInheritedWidgetOfExactType<MediaQuery>()
@@ -59,7 +46,7 @@ class WidgetToImageController with ChangeNotifier {
       }
 
       /// Get the image from the boundary
-      final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+      final ui.Image image = boundary.toImageSync(pixelRatio: pixelRatio);
 
       /// Get the byte data from the image
       final ByteData? byteData = await image.toByteData(
@@ -77,28 +64,32 @@ class WidgetToImageController with ChangeNotifier {
         outputPath,
       );
 
-      /// Update the path to the actual saved file
-      _jpegPath = actualPath;
-
-      /// Set the status to saved
-      _status = WidgetToImageStatus.saved;
-      notifyListeners();
+      return actualPath;
     } catch (e) {
-      _status = WidgetToImageStatus.error;
-      _jpegPath = null;
-      notifyListeners();
+      rethrow;
+    } finally {
+      if (measureTime) {
+        log('saveAsJpeg: ${stopwatch?.elapsedMilliseconds}ms');
+      }
     }
   }
 
   /// Default dart method to save as PNG
-  Future<void> saveAsPng({
+  /// - [outputPath] - Path to the saved PNG file
+  /// - [pixelRatio] - Pixel ratio of the image, default is [MediaQueryData.devicePixelRatio]
+  /// - [measureTime] - Whether to count the speed of the conversion
+  Future<String> saveAsPng({
     required String outputPath,
     double? pixelRatio,
+    bool measureTime = false,
   }) async {
-    _status = WidgetToImageStatus.saving;
-    notifyListeners();
+    Stopwatch? stopwatch;
 
     try {
+      if (measureTime) {
+        stopwatch = Stopwatch()..start();
+      }
+
       /// Get the pixel ratio from the context
       pixelRatio ??= _repaintKey.currentContext
               ?.getInheritedWidgetOfExactType<MediaQuery>()
@@ -113,7 +104,7 @@ class WidgetToImageController with ChangeNotifier {
       }
 
       /// Get the image from the boundary
-      final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
+      final ui.Image image = boundary.toImageSync(pixelRatio: pixelRatio);
 
       /// Get the byte data from the image
       final ByteData? byteData = await image.toByteData(
@@ -125,16 +116,163 @@ class WidgetToImageController with ChangeNotifier {
       /// Save the byte data to a PNG file
       File(outputPath).writeAsBytesSync(png);
 
-      /// Update the path to the actual saved file
-      _pngPath = outputPath;
-
-      /// Set the status to saved
-      _status = WidgetToImageStatus.saved;
-      notifyListeners();
+      return outputPath;
     } catch (e) {
-      _status = WidgetToImageStatus.error;
-      _pngPath = null;
-      notifyListeners();
+      rethrow;
+    } finally {
+      if (measureTime) {
+        log('saveAsPng: ${stopwatch?.elapsedMilliseconds}ms');
+      }
+    }
+  }
+
+  /// Get the RGBA bytes of the widget
+  /// - [pixelRatio] - Pixel ratio of the image, default is [MediaQueryData.devicePixelRatio]
+  Future<(Uint8List bytes, int width, int height)> getRgba({
+    double? pixelRatio,
+    bool measureTime = false,
+  }) async {
+    Stopwatch? stopwatch;
+    if (measureTime) {
+      stopwatch = Stopwatch()..start();
+    }
+
+    pixelRatio ??= _repaintKey.currentContext
+            ?.getInheritedWidgetOfExactType<MediaQuery>()
+            ?.data
+            .devicePixelRatio ??
+        1.0;
+
+    final boundary = _repaintKey.currentContext?.findRenderObject();
+    if (boundary is! RenderRepaintBoundary) {
+      throw Exception('Не найден RenderRepaintBoundary');
+    }
+    final image = boundary.toImageSync(pixelRatio: pixelRatio);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (byteData == null) throw Exception('Не удалось получить байты');
+
+    if (measureTime) {
+      stopwatch?.stop();
+      log('getRgba: ${stopwatch?.elapsedMilliseconds}ms');
+    }
+
+    return (
+      byteData.buffer.asUint8List(),
+      image.width,
+      image.height,
+    );
+  }
+
+  void convertToJpeg({
+    required String outputPath,
+    required Uint8List bytes,
+    required int width,
+    required int height,
+    int quality = 90,
+    bool measureTime = false,
+    bool calculateSize = false,
+  }) async {
+    Stopwatch? stopwatchSave;
+    Stopwatch? stopwatchConvert;
+    if (measureTime) {
+      stopwatchSave = Stopwatch();
+      stopwatchConvert = Stopwatch();
+    }
+
+    try {
+      stopwatchSave?.start();
+      final tempPath = '${outputPath}_temp.rgba';
+
+      /// Save the byte data to a PNG file
+      File(tempPath).writeAsBytesSync(bytes);
+
+      stopwatchSave?.stop();
+
+      /// Convert the RGBA file to a JPEG file
+      stopwatchConvert?.start();
+      convertRgbaFileToJpeg(
+        tempPath,
+        width,
+        height,
+        quality,
+        outputPath,
+      );
+      stopwatchConvert?.stop();
+
+      /// Delete the temporary file
+      File(tempPath).deleteSync();
+
+      if (calculateSize) {
+        final file = File(outputPath);
+        final size = file.lengthSync();
+        final sizeKb = size / 1024;
+        final sizeMb = sizeKb / 1024;
+        log('size: $size bytes ($sizeKb kb, $sizeMb mb)');
+      }
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    } finally {
+      if (measureTime) {
+        stopwatchSave?.stop();
+        stopwatchConvert?.stop();
+
+        final sb = StringBuffer();
+        sb
+          ..write(
+            'convertToJpeg save: ${stopwatchSave?.elapsedMilliseconds}ms\n',
+          )
+          ..write(
+            'convertToJpeg convert: ${stopwatchConvert?.elapsedMilliseconds}ms\n',
+          );
+        log(sb.toString());
+      }
+    }
+  }
+
+  /// Save the widget as a RGBA file
+  /// - [outputPath] - Path to the saved PNG file
+  /// - [pixelRatio] - Pixel ratio of the image, default is 1.0
+  /// - [quality] - Quality of the image, 0-100
+  /// - [measureTime] - Whether to count the speed of the conversion
+  Future<String> saveAsRgbaFile({
+    required String outputPath,
+    double? pixelRatio,
+    int quality = 90,
+    bool measureTime = false,
+    bool calculateSize = false,
+  }) async {
+    Stopwatch? stopwatch;
+
+    if (measureTime) {
+      stopwatch = Stopwatch()..start();
+    }
+
+    try {
+      final (bytes, width, height) = await getRgba(
+        pixelRatio: pixelRatio,
+        measureTime: measureTime,
+      );
+
+      convertToJpeg(
+        outputPath: outputPath,
+        bytes: bytes,
+        width: width,
+        height: height,
+        quality: quality,
+        measureTime: measureTime,
+        calculateSize: calculateSize,
+      );
+
+      return outputPath;
+    } catch (e) {
+      log(e.toString());
+      rethrow;
+    } finally {
+      if (measureTime) {
+        stopwatch?.stop();
+        log('saveAsRgbaFile full: ${stopwatch?.elapsedMilliseconds}ms');
+      }
     }
   }
 }

@@ -8,7 +8,7 @@ class WidgetToImageWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = WidgetToImageProvider.of(context, listen: false);
+    final controller = WidgetToImageProvider.of(context);
     return RepaintBoundary(key: controller.repaintKey, child: child);
   }
 }

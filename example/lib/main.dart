@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -25,18 +24,38 @@ class ExampleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            title: Text('Widget to Image Converter'),
-            centerTitle: true,
-            pinned: true,
-          ),
-          SliverToBoxAdapter(child: InitialImage()),
-          SliverToBoxAdapter(child: ButtonsRow()),
-          SliverToBoxAdapter(child: ResultRow()),
-        ],
+    return const DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        body: CustomScrollView(
+          physics: NeverScrollableScrollPhysics(),
+          slivers: [
+            SliverAppBar(
+              title: Text('Widget to Image Converter'),
+              centerTitle: true,
+              pinned: true,
+            ),
+            SliverToBoxAdapter(child: InitialImage()),
+            SliverToBoxAdapter(
+              child: TabBar(
+                tabs: [
+                  Tab(text: 'PNG'),
+                  Tab(text: 'JPEG'),
+                  Tab(text: 'RGBA'),
+                ],
+              ),
+            ),
+            SliverFillRemaining(
+              child: TabBarView(
+                children: [
+                  _Tab(tabType: TabType.png),
+                  _Tab(tabType: TabType.jpeg),
+                  _Tab(tabType: TabType.rgba),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -62,116 +81,103 @@ class InitialImage extends StatelessWidget {
   }
 }
 
-class ButtonsRow extends StatefulWidget {
-  const ButtonsRow({super.key});
+enum TabType {
+  png,
+  jpeg,
+  rgba;
 
-  @override
-  State<ButtonsRow> createState() => _ButtonsRowState();
+  String get ext => switch (this) {
+    TabType.png => 'png',
+    TabType.jpeg => 'jpg',
+    TabType.rgba => 'jpg',
+  };
 }
 
-class _ButtonsRowState extends State<ButtonsRow> {
-  String _pngLength = '';
-  String _pngTime = '';
-  String _jpegLength = '';
-  String _jpegTime = '';
+class _Tab extends StatefulWidget {
+  const _Tab({required this.tabType});
+  final TabType tabType;
+
+  @override
+  State<_Tab> createState() => _TabState();
+}
+
+class _TabState extends State<_Tab> with AutomaticKeepAliveClientMixin {
+  String? _path;
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+    final controller = WidgetToImageProvider.of(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
         spacing: 10,
         children: [
-          Column(
-            spacing: 10,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  final controller = WidgetToImageProvider.of(
-                    context,
-                    listen: false,
+          _Button(
+            onPressed: (path) async {
+              switch (widget.tabType) {
+                case TabType.png:
+                  await controller.saveAsPng(
+                    outputPath: path,
+                    measureTime: true,
                   );
-                  final now = DateTime.now().millisecondsSinceEpoch;
-                  final tempDir = await getTemporaryDirectory();
-                  final outputPath = '${tempDir.path}/test_$now.png';
-                  final Stopwatch stopwatch = Stopwatch()..start();
-                  await controller.saveAsPng(outputPath: outputPath);
-                  stopwatch.stop();
-                  _pngTime = 'PNG saved in ${stopwatch.elapsedMilliseconds}ms';
-                  final length = File(outputPath).lengthSync();
-                  final lengthKb = length / 1024;
-                  _pngLength = 'PNG length: ${lengthKb.toStringAsFixed(2)} KB';
-                  log(_pngTime);
-                  log(_pngLength);
-                  setState(() {});
-                },
-                child: const Text('Save PNG'),
-              ),
-              Text(_pngTime),
-              Text(_pngLength),
-            ],
-          ),
-          Column(
-            spacing: 10,
-            children: [
-              ElevatedButton(
-                onPressed: () async {
-                  final controller = WidgetToImageProvider.of(
-                    context,
-                    listen: false,
+                  break;
+                case TabType.jpeg:
+                  await controller.saveAsJpeg(
+                    outputPath: path,
+                    measureTime: true,
                   );
-                  final now = DateTime.now().millisecondsSinceEpoch;
-                  final tempDir = await getTemporaryDirectory();
-                  final outputPath = '${tempDir.path}/test_$now.jpg';
-                  final Stopwatch stopwatch = Stopwatch()..start();
-                  await controller.saveAsJpeg(outputPath: outputPath);
-                  stopwatch.stop();
-                  _jpegTime =
-                      'JPEG saved in ${stopwatch.elapsedMilliseconds}ms';
-                  final length = File(outputPath).lengthSync();
-                  final lengthKb = length / 1024;
-                  _jpegLength =
-                      'JPEG length: ${lengthKb.toStringAsFixed(2)} KB';
-                  log(_jpegTime);
-                  log(_jpegLength);
-                  setState(() {});
-                },
-                child: const Text('Save JPEG'),
-              ),
-              Text(_jpegTime),
-              Text(_jpegLength),
-            ],
+                  break;
+                case TabType.rgba:
+                  await controller.saveAsRgbaFile(
+                    outputPath: path,
+                    measureTime: true,
+                  );
+                  break;
+              }
+              setState(() {
+                _path = path;
+              });
+            },
+            text: 'Save ${widget.tabType.name}',
+            ext: widget.tabType.ext,
           ),
+          if (_path != null) Text(_path!.split('/').last),
+          if (_path != null)
+            Text(
+              'Size: ${File(_path!).lengthSync() ~/ 1024} KB',
+              style: const TextStyle(fontSize: 12),
+            ),
+          if (_path != null) Image.file(File(_path!), fit: BoxFit.cover),
         ],
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
-class ResultRow extends StatelessWidget {
-  const ResultRow({super.key});
+class _Button extends StatelessWidget {
+  const _Button({
+    required this.onPressed,
+    required this.text,
+    required this.ext,
+  });
+  final Future<void> Function(String path) onPressed;
+  final String text;
+  final String ext;
 
   @override
   Widget build(BuildContext context) {
-    final controller = WidgetToImageProvider.of(context, listen: true);
-    final pngPath = controller.pngPath;
-    final jpegPath = controller.jpegPath;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-        height: 200,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 10,
-          children: [
-            if (pngPath != null)
-              Expanded(child: Image.file(File(pngPath), fit: BoxFit.cover)),
-            if (jpegPath != null)
-              Expanded(child: Image.file(File(jpegPath), fit: BoxFit.cover)),
-          ],
-        ),
-      ),
+    return ElevatedButton(
+      onPressed: () async {
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final tempDir = await getTemporaryDirectory();
+        final outputPath = '${tempDir.path}/test_$now.$ext';
+        await onPressed(outputPath);
+      },
+      child: Text(text),
     );
   }
 }
