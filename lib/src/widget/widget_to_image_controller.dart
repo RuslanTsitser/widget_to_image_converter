@@ -52,6 +52,7 @@ class WidgetToImageController {
       final ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.rawRgba,
       );
+      image.dispose();
       if (byteData == null) throw Exception('Не удалось получить байты');
       final Uint8List rgba = byteData.buffer.asUint8List();
 
@@ -110,6 +111,7 @@ class WidgetToImageController {
       final ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.png,
       );
+      image.dispose();
       if (byteData == null) throw Exception('Не удалось получить байты');
       final Uint8List png = byteData.buffer.asUint8List();
 
@@ -149,6 +151,7 @@ class WidgetToImageController {
     }
     final image = boundary.toImageSync(pixelRatio: pixelRatio);
     final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    image.dispose();
     if (byteData == null) throw Exception('Не удалось получить байты');
 
     if (measureTime) {
