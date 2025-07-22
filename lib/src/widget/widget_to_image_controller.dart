@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:widget_to_image_converter/src/widget_to_image_converter.dart';
 
+import '../mixin/convert_to_jpeg_isolate_mixin.dart';
+
 /// Controller for the widget to image conversion
-class WidgetToImageController {
+class WidgetToImageController with ConvertToJpegIsolateMixin {
   final GlobalKey _repaintKey = GlobalKey();
 
   /// Key for the widget to image conversion

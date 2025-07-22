@@ -129,10 +129,11 @@ class _TabState extends State<_Tab> with AutomaticKeepAliveClientMixin {
                   );
                   break;
                 case TabType.rgba:
-                  await controller.saveAsRgbaFile(
-                    outputPath: path,
+                  final (bytes, width, height) = await controller.getRgba(
                     measureTime: true,
                   );
+                  File(path).writeAsBytesSync(bytes);
+                  await controller.convertToJpegAsync(path, width, height);
                   break;
               }
               setState(() {

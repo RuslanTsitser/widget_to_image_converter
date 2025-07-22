@@ -151,6 +151,8 @@ Wrapper for providing controller to widgets.
 - `saveAsJpeg({required String outputPath, double? pixelRatio, int quality = 90})`
 - `saveAsPng({required String outputPath, double? pixelRatio})`
 - `saveAsRgbaFile({required String outputPath, double? pixelRatio})`
+- `getRgba({required String outputPath, double? pixelRatio})`
+- `convertToJpegAsync(String path, int width, int height)`
 
 ### WidgetToImageWrapper
 
