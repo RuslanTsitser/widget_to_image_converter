@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1] - 2025-07-30
+
+- Add `ConvertToJpegIsolatePoolMixin` mixin
+- Add `convertToJpegWithPool` method
+- Add `configurePool` method
+- Add `reset` method
+- Add `getPoolStats` method
+
 ## [1.1.0] - 2025-07-22
 
 - Add `convertToJpegAsync` method
