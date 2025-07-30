@@ -7,7 +7,31 @@ Flutter FFI plugin for converting widgets to JPEG and PNG images using native C 
 - Convert Flutter widgets to JPEG and PNG images
 - Automatic conversion state management
 - JPEG quality configuration (1-100)
+- **Parallel processing with worker pool** - handle multiple images efficiently
+- **Configurable pool size** - optimize for your device performance
 - Cross-platform support (iOS, Android, macOS)
+
+## Worker Pool
+
+For processing multiple images efficiently, use the isolate pool:
+
+```dart
+import 'package:widget_to_image_converter/widget_to_image_converter.dart';
+
+void main() {
+  // Configure pool size (default is 4)
+  ConvertToJpegIsolatePoolMixin.configurePool(poolSize: 6);
+  
+  runApp(MyApp());
+}
+
+// Usage with controller
+final controller = WidgetToImageProvider.of(context);
+await controller.saveAsJpegWithPool(
+  outputPath: '/path/to/image.jpg',
+  quality: 90,
+);
+```
 
 ## Installation
 
